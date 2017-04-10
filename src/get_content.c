@@ -2,4 +2,5 @@
 
 int pa_start(char *pa_curl)
 {
+	return 0;
 }
