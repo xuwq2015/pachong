@@ -24,6 +24,7 @@ void get_head_thread(char *ch)
     //curl_easy_setopt(curl, CURLOPT_RANGE, "0-500");     //用于断点续传, 设置下载的分片 
 	curl_easy_setopt(curl, CURLOPT_NOBODY, 0);			//输出body内容
 	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);			//输出body内容
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
      
 
     char buffer[MAXHEADLEN] = {0x0}; 
