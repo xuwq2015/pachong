@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <curl/curl.h>
 #include <get_content.h>
 #include <common.h>
 #include <curl/curl.h>
 
-CURLcode ret_curl;
 
 int main(int argc, char *argv[])
 {
@@ -15,8 +15,8 @@ int main(int argc, char *argv[])
 		exit(0);
 	}
 
-	ret_curl = curl_global_init(CURL_GLOBAL_NOTHING);
-
+	CURLcode ret_code = curl_global_init(CURL_GLOBAL_NOTHING);
+	
 	int ret = pa_start(argv[1]);
 
 	curl_global_cleanup();

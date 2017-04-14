@@ -3,70 +3,57 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-static CURL *easyhandle = NULL;
-static FILE *dfp = NULL;
-#define FILE_NAME "./cache/cache.html"
+static int data_cishu = 0;
+static int data_size = 0;
+static FILE *fp = NULL;
 
 int pa_start(char *pa_curl)
 {
 	char url_ch[1024] = {'\0'};
-	strncpy(pa_curl, url_ch, strlen(pa_curl));
+	strncpy(url_ch, pa_curl, strlen(pa_curl));
+	fp = fopen("./cache/cache.html", "w+");
 
-	//获取句柄
-	easyhandle = curl_easy_init();
-	if(easyhandle == NULL)
+
+	get_head_thread(url_ch);
+	fclose(fp);
+	return 0;
+}
+
+void get_head_thread(char *ch) 
+{ 
+    CURL *curl = curl_easy_init(); 
+	if(curl == NULL)
 	{
 		printf("获取句柄失败\n");
-		return -1;
+		return;
 	}
+     
+
+    curl_easy_setopt(curl, CURLOPT_URL, ch); //设置下载的URI 
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 2000);        //设置超时 
+    //curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);        //屏蔽其它信号 
+    //curl_easy_setopt(curl, CURLOPT_HEADER, 1);          //下载数据包括HTTP头部 
+    //curl_easy_setopt(curl, CURLOPT_RANGE, "0-500");     //用于断点续传, 设置下载的分片 
+	curl_easy_setopt(curl, CURLOPT_NOBODY, 0);			//输出body内容
+	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);			//输出body内容
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+     
+
+    char buffer[MAXHEADLEN] = {0x0}; 
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, callback_get_head); //设置下载数据的回调函数 
+    //curl_easy_setopt(curl, CURLOPT_WRITEDATA, buffer);   
 
 
+    curl_easy_perform(curl);   
+    curl_easy_cleanup(curl); 
+    //此时网站HTTP头信息已经存放在buffer内. 
+} 
 
-	//设置url参数
-	CURLcode ret_code = curl_easy_setopt(easyhandle, CURLOPT_URL, url_ch);
-	if(ret_code)
-	{
-		printf("url设置错误\n");
-		return -1;
-	}
-
-	//设置接收数据的回调函数
-	ret_code = curl_easy_setopt(easyhandle, CURLOPT_WRITEFUNCTION, pa_rec);
-	if(ret_code)
-	{
-		printf("设置接收数据的回调函数失败\n");
-		return -1;
-	}
-
-	//设置接收body内容
-	if((ret_code = curl_easy_setopt(easyhandle, CURLOPT_NOBODY, 0)) != 0)
-	{
-		printf("设置接收budy内容参数错误\n");
-		return -1;
-	}
-	
-
-
-	//发送请求
-	ret_code = curl_easy_perform(easyhandle);
-	if(ret_code)
-	{
-		printf("请求发送失败\n");
-		return -1;
-	}
-
-	return 0;
-}
-
-static size_t pa_rec(char *ptr, size_t size, size_t nmemb, void *userdata)
-{
-/*
-	dfp = tmpfile();
-	fwrite(ptr, size, nmemb, dfp);
-	return 0;
-*/
-	int len = size * nmemb;
-	int fd = open(FILE_NAME, O_RDWR);
-	write(fd, ptr, len);
-	close(fd);
-}
+size_t callback_get_head(void *ptr, size_t size, size_t nmemb, void *userp) 
+{ 
+	data_cishu++;
+	int ret = fwrite(ptr, size, nmemb, fp);
+	data_size += ret;
+	printf("写入次数：%d;写入数据大小：%d\n", data_cishu, data_size);
+    return size * nmemb;     //必须返回这个大小, 否则只回调一次, 不清楚为何. 
+} 

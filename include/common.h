@@ -2,7 +2,6 @@
 #define _COMMON_H_
 
 #define BUF_SIZE 1024
-
-extern CURLcode *curl;
+#define MAXHEADLEN 1024
 
 #endif

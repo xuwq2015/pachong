@@ -7,10 +7,11 @@ objects = main.o get_content.o
 #生成最终目标文件pachong
 pachong: $(objects)
 	gcc -o pachong $(objects) -lcurl
+	mv $(objects) ./bulid
 
 $(objects):%.o:%.c
 	gcc -c $< -Iinclude
 
 .PHONY:clean
 clean:
-	-rm pachong $(objects)
+	-rm pachong ./bulid/*
