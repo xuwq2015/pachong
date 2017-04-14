@@ -10,8 +10,11 @@ static FILE *fp = NULL;
 int pa_start(char *pa_curl)
 {
 	char url_ch[1024] = {'\0'};
+	char file_name[FILENAME_SIZE] = {'\0'}; 
+
 	strncpy(url_ch, pa_curl, strlen(pa_curl));
-	fp = fopen("./cache/cache.html", "w+");
+	pa_extract_filename(url_ch, file_name);	
+	fp = fopen(file_name, "w+");
 
 
 	get_head_thread(url_ch);
@@ -49,6 +52,8 @@ void get_head_thread(char *ch)
     //此时网站HTTP头信息已经存放在buffer内. 
 } 
 
+
+/* curl回调函数 */
 size_t callback_get_head(void *ptr, size_t size, size_t nmemb, void *userp) 
 { 
 	data_cishu++;
@@ -57,3 +62,40 @@ size_t callback_get_head(void *ptr, size_t size, size_t nmemb, void *userp)
 	printf("写入次数：%d;写入数据大小：%d\n", data_cishu, data_size);
     return size * nmemb;     //必须返回这个大小, 否则只回调一次, 不清楚为何. 
 } 
+
+
+/* 根据提供的url提取网页内容写入文件名 */
+static int pa_extract_filename(char *url_ch, char *ret_filename)
+{
+	printf("进入pa_extract_filename函数\n");
+	char file_name[FILENAME_SIZE] = {'\0'}; 
+	char *ch = '.';
+	int num = 0;
+
+	printf("url:%s\n", url_ch);
+	//去掉"http://"
+	if(strstr(url_ch, "http") != NULL)
+	{
+		url_ch = url_ch[7];
+		printf("去掉http字符串\n");
+		printf("url:%s\n", url_ch);
+	}
+
+	//去掉字符串"www"
+	if(strstr(url_ch, "www") != NULL)
+	{
+		url_ch = url_ch[4];
+		printf("去掉www字符串\n");
+		printf("url:%s\n", url_ch);
+	}
+	
+	strncpy(file_name, FILE_DIR, strlen(FILE_DIR));
+	printf("file_name:%s\n", file_name);
+	num = strlen(url_ch) - strlen(strchr(url_ch, '.'));
+	printf("num:%d\n", num);
+	strncat(file_name, url_ch, num);
+	printf("文件名提取完成\n");
+
+	strncpy(ret_filename, file_name, strlen(file_name));
+	return 0;
+}
