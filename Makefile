@@ -2,7 +2,7 @@ vpath %.h ./include
 vpath %.c ./src
 
 #目标文件的依赖关系
-objects = main.o get_content.o
+objects = main.o get_content.o extract_connection.o
 
 #生成最终目标文件pachong
 pachong: $(objects)
@@ -14,4 +14,4 @@ $(objects):%.o:%.c
 
 .PHONY:clean
 clean:
-	-rm pachong ./bulid/*
+	-rm pachong ./bulid/* ./cache/*

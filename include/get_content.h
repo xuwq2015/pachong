@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <curl/curl.h>
 #include <common.h>
+#include <extract_connection.h>
 
 int pa_start(char*);
 void get_head_thread(char*);

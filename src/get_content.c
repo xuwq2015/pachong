@@ -18,6 +18,9 @@ int pa_start(char *pa_curl)
 
 	get_head_thread(url_ch);
 	fclose(fp);
+	printf("\n");
+	
+	pa_extract_connection(file_name);
 	return 0;
 }
 
@@ -65,7 +68,6 @@ size_t callback_get_head(void *ptr, size_t size, size_t nmemb, void *userp)
 /* 根据提供的url提取网页内容写入文件名 */
 static int pa_extract_filename(char *url_ch, char *ret_filename)
 {
-	printf("进入pa_extract_filename函数\n");
 	char file_name[FILENAME_SIZE] = {'\0'}; 
 	int num = 0;
 
