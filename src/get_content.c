@@ -3,7 +3,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-static int data_cishu = 0;
 static int data_size = 0;
 static FILE *fp = NULL;
 
@@ -34,8 +33,8 @@ void get_head_thread(char *ch)
 
     curl_easy_setopt(curl, CURLOPT_URL, ch); //设置下载的URI 
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 2000);        //设置超时 
-    //curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);        //屏蔽其它信号 
-    //curl_easy_setopt(curl, CURLOPT_HEADER, 1);          //下载数据包括HTTP头部 
+    curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);        //屏蔽其它信号 
+    curl_easy_setopt(curl, CURLOPT_HEADER, 1);          //下载数据包括HTTP头部 
     //curl_easy_setopt(curl, CURLOPT_RANGE, "0-500");     //用于断点续传, 设置下载的分片 
 	curl_easy_setopt(curl, CURLOPT_NOBODY, 0);			//输出body内容
 	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);			//输出body内容
@@ -44,7 +43,7 @@ void get_head_thread(char *ch)
 
     char buffer[MAXHEADLEN] = {0x0}; 
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, callback_get_head); //设置下载数据的回调函数 
-    //curl_easy_setopt(curl, CURLOPT_WRITEDATA, buffer);   
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, buffer);   
 
 
     curl_easy_perform(curl);   
@@ -56,10 +55,9 @@ void get_head_thread(char *ch)
 /* curl回调函数 */
 size_t callback_get_head(void *ptr, size_t size, size_t nmemb, void *userp) 
 { 
-	data_cishu++;
 	int ret = fwrite(ptr, size, nmemb, fp);
 	data_size += ret;
-	printf("写入次数：%d;写入数据大小：%d\n", data_cishu, data_size);
+	printf("写入数据大小：%d\r", data_size);
     return size * nmemb;     //必须返回这个大小, 否则只回调一次, 不清楚为何. 
 } 
 
@@ -69,32 +67,23 @@ static int pa_extract_filename(char *url_ch, char *ret_filename)
 {
 	printf("进入pa_extract_filename函数\n");
 	char file_name[FILENAME_SIZE] = {'\0'}; 
-	char *ch = '.';
 	int num = 0;
 
-	printf("url:%s\n", url_ch);
 	//去掉"http://"
 	if(strstr(url_ch, "http") != NULL)
 	{
-		url_ch = url_ch[7];
-		printf("去掉http字符串\n");
-		printf("url:%s\n", url_ch);
+		url_ch = &url_ch[7];
 	}
 
 	//去掉字符串"www"
 	if(strstr(url_ch, "www") != NULL)
 	{
-		url_ch = url_ch[4];
-		printf("去掉www字符串\n");
-		printf("url:%s\n", url_ch);
+		url_ch = &url_ch[4];
 	}
 	
 	strncpy(file_name, FILE_DIR, strlen(FILE_DIR));
-	printf("file_name:%s\n", file_name);
 	num = strlen(url_ch) - strlen(strchr(url_ch, '.'));
-	printf("num:%d\n", num);
 	strncat(file_name, url_ch, num);
-	printf("文件名提取完成\n");
 
 	strncpy(ret_filename, file_name, strlen(file_name));
 	return 0;
