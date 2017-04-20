@@ -1,14 +1,16 @@
 #include <extract_connection.h>
 
-static pa_link_st *pa_link;
+//static pa_link_st pa_link_head;
+//static pa_link_st *pa_link_tail = pa_link_head->next;
 
 /* 从下载的首页中获取所有链接  */
-int pa_extract_connection(char *file_name)
+int pa_extract_connection(char *file_name, pa_link_st *link_p)
 {
-	char filename_suffix[] = "_home";
+	char filename_suffix[] = "_link";			//获取到连接后所保存的文件，在file_name后面添加link后缀
 	char write_filename[BUF_SIZE] = {'\0'};
 	char buf[BUF_SIZE] = {'\0'};
 	char ret_str[BUF_SIZE] = {'\0'};
+	pa_link_st *next_p = link_p;				//指向链表最后
 
 	strncpy(write_filename, file_name, strlen(file_name));
 	strncat(write_filename, filename_suffix, strlen(filename_suffix));
@@ -16,13 +18,17 @@ int pa_extract_connection(char *file_name)
 	FILE *fp = fopen(file_name, "r");
 	if(fp == NULL)
 	{
-		printf("文件打开失败\n");
+		char err_str[BUF_SIZE] = "pa_extract_connection:文件打开失败:"; 
+		strncat(err_str, file_name, strlen(file_name)); 
+		pa_err(err_str);
 		return -1;
 	}
 	FILE *wfp = fopen(write_filename, "w+");
 	if(wfp == NULL)
 	{
-		printf("写文件打开失败\n");
+		char err_str[BUF_SIZE] = "pa_extract_connection:文件打开失败:"; 
+		strncat(err_str, write_filename, strlen(write_filename)); 
+		pa_err(err_str);
 		fclose(fp);
 		return -1;
 	}
@@ -46,9 +52,12 @@ int pa_extract_connection(char *file_name)
 	fclose(wfp);
 }
 
+
+/* 通过正则表达式获取str中的连接 */
 static int pa_match_str(char *str, char *ret_str)
 {
-	char pa_rule[] = ".*(<a.*</a>).*";
+	//char pa_rule[] = ".*(<a.*</a>).*";
+	char pa_rule[] = ".*<a.*href=\"([^\"]*).*>";
 	regex_t reg;
 	regmatch_t pm[2];
 	int  iret = 0;
@@ -68,4 +77,15 @@ static int pa_match_str(char *str, char *ret_str)
 	index_end = pm[1].rm_eo;
 	strncpy(ret_str, &str[index_start], (index_end - index_start));
 	return 0;
+}
+
+
+/* 将pa_match_str函数中获取到的连接保存到链表中 */
+static pa_link_st *pa_save_link(char *str, pa_link_st *link_p)
+{
+	pa_link_st *p = link_p;
+	p = (pa_link_st *)malloc(sizeof(pa_link_st));
+	strncpy(p->link, str, strlen(str));
+	p->next = NULL;
+	return &(p->next);
 }

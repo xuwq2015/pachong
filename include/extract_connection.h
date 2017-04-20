@@ -6,14 +6,11 @@
 #include <string.h>
 #include <sys/types.h>
 #include <regex.h>
+#include <stdlib.h>
+#include <err_warn.h>
 
-typedef struct link_struct
-{
-	char link[BUF_SIZE];
-	struct link_struct *next;
-}pa_link_st;
-
-int pa_extract_connection(char*);
+int pa_extract_connection(char*, pa_link_st*);
 static int pa_match_str(char*, char*);
+static pa_link_st *pa_save_link(char*, pa_link_st*);
 
 #endif

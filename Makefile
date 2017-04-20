@@ -15,3 +15,7 @@ $(objects):%.o:%.c
 .PHONY:clean
 clean:
 	-rm pachong ./bulid/* ./cache/*
+
+.PHONY:cache
+cache:
+	-rm ./cache/*

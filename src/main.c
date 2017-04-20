@@ -5,13 +5,15 @@
 #include <get_content.h>
 #include <common.h>
 #include <curl/curl.h>
+#include <err_warn.h>
 
 
 int main(int argc, char *argv[])
 {
 	if(argc < 1)
 	{
-		printf("参数输入错误，请重新输入\n");
+		char str[] = "参数输入错误，请重新输入";
+		pa_err(str);
 		exit(0);
 	}
 
