@@ -3,10 +3,7 @@
 
 #include <string.h>
 #include <stdio.h>
-#include <curl/curl.h>
-#include <common.h>
-#include <err_warn.h>
-#include <extract_connection.h>
+#include <stdlib.h>
 
 int pa_start(char*);
 void get_head_thread(char*);

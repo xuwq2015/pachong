@@ -2,6 +2,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <err_warn.h>
+#include <string.h>
+#include <stdio.h>
+#include <curl/curl.h>
+#include <common.h>
+#include <extract_connection.h>
 
 static pa_link_st *pa_link_p = NULL;	//链表头指针
 static int data_size = 0;				//下载的数据的总大小
@@ -74,7 +80,8 @@ size_t callback_get_head(void *ptr, size_t size, size_t nmemb, void *userp)
 	int ret = fwrite(ptr, size, nmemb, fp);
 	data_size += ret;
 	char err_str[BUF_SIZE] = "写入数据大小:"; 
-	char str[] = ((char)data_size + 'a');
+	char str[10] = {'\0'};
+	sprintf(str, "%d", data_size);
 	strncat(err_str, str, strlen(str)), 
 	pa_warn(err_str);
     return size * nmemb;     //必须返回这个大小, 否则只回调一次, 不清楚为何. 
@@ -111,8 +118,9 @@ static int pa_extract_filename(char *url_ch, char *ret_filename)
 /* 释放链表 */
 static int pa_free()
 {
+	pa_link_st *next_p = NULL;
 	if(pa_link_p)
-		pa_link_st *next_p = pa_link_p->next;	
+		next_p = pa_link_p->next;	
 	else 
 		return 0;
 

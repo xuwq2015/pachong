@@ -87,5 +87,5 @@ static pa_link_st *pa_save_link(char *str, pa_link_st *link_p)
 	p = (pa_link_st *)malloc(sizeof(pa_link_st));
 	strncpy(p->link, str, strlen(str));
 	p->next = NULL;
-	return &(p->next);
+	return p->next;
 }

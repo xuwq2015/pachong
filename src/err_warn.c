@@ -22,7 +22,7 @@ static char *pa_get_time(char *str)
 {
 	time_t timep;
 	time(&timep);
-	char *s = ctime(timep);
+	char *s = ctime(&timep);
 	strncpy(str, s, strlen(s));
 	strncat(str, " ", 1);
 	return str;

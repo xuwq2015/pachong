@@ -2,7 +2,7 @@ vpath %.h ./include
 vpath %.c ./src
 
 #目标文件的依赖关系
-objects = main.o get_content.o extract_connection.o
+objects = main.o get_content.o extract_connection.o err_warn.o
 
 #生成最终目标文件pachong
 pachong: $(objects)
