@@ -1,20 +1,24 @@
 #include <extract_connection.h>
 
-//static pa_link_st pa_link_head;
-//static pa_link_st *pa_link_tail = pa_link_head->next;
-
-/* 从下载的首页中获取所有链接  */
+/*
+ * 从下载的首页中获取所有链接  
+ * file_name:保存网页的文件名.
+ * link_p:保存网页中提取出的链接的链表地址.
+ * */
 int pa_extract_connection(char *file_name, pa_link_st *link_p)
 {
 	char filename_suffix[] = "_link";			//获取到连接后所保存的文件，在file_name后面添加link后缀
 	char write_filename[BUF_SIZE] = {'\0'};
 	char buf[BUF_SIZE] = {'\0'};
 	char ret_str[BUF_SIZE] = {'\0'};
-	pa_link_st *next_p = link_p;				//指向链表最后
+
+	pa_link_st *link_head = NULL;
+	pa_link_st *link_end = link_p;
 
 	strncpy(write_filename, file_name, strlen(file_name));
 	strncat(write_filename, filename_suffix, strlen(filename_suffix));
 
+	/* 下载的打开网页文件 */
 	FILE *fp = fopen(file_name, "r");
 	if(fp == NULL)
 	{
@@ -23,6 +27,7 @@ int pa_extract_connection(char *file_name, pa_link_st *link_p)
 		pa_err(err_str);
 		return -1;
 	}
+	/* 打开保存链接的文件，没有则创建新文件 */
 	FILE *wfp = fopen(write_filename, "w+");
 	if(wfp == NULL)
 	{
@@ -53,7 +58,11 @@ int pa_extract_connection(char *file_name, pa_link_st *link_p)
 }
 
 
-/* 通过正则表达式获取str中的连接 */
+/* 
+ * 通过正则表达式获取str中的连接 
+ * str:源字符串
+ * ret_str:从str中匹配到的字符串，是此函数的返回值
+ * */
 static int pa_match_str(char *str, char *ret_str)
 {
 	//char pa_rule[] = ".*(<a.*</a>).*";
@@ -81,11 +90,28 @@ static int pa_match_str(char *str, char *ret_str)
 
 
 /* 将pa_match_str函数中获取到的连接保存到链表中 */
-static pa_link_st *pa_save_link(char *str, pa_link_st *link_p)
+static int pa_save_link(char *str, pa_link_st *link_p)
 {
 	pa_link_st *p = link_p;
 	p = (pa_link_st *)malloc(sizeof(pa_link_st));
 	strncpy(p->link, str, strlen(str));
 	p->next = NULL;
-	return p->next;
+	return 0;
+}
+
+/* 
+ * 判断str是否为url链接，如果是返回0，否则返回非0值 
+ * */
+static int pa_identify_link(char *str)
+{
+	char *ch[] = {"http://", "www"};
+	if(!strcmp(str, ch[0]))
+	{
+		return 0;
+	}
+	else if(!strcmp(str, ch[1]))
+	{
+		return 0;
+	}
+	return -1;
 }

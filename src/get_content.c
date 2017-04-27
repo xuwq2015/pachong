@@ -26,6 +26,7 @@ int pa_start(char *pa_curl)
 	if(fp == NULL)
 	{
 		char err_str[] = "pa_start:文件打开失败";
+		strncat(err_str, file_name, strlen(file_name));
 		pa_err(err_str);
 		return -1;
 	}

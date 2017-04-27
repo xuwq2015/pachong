@@ -7,7 +7,6 @@
 #include <curl/curl.h>
 #include <err_warn.h>
 
-
 int main(int argc, char *argv[])
 {
 	if(argc < 1)

@@ -11,6 +11,7 @@
 
 int pa_extract_connection(char*, pa_link_st*);
 static int pa_match_str(char*, char*);
-static pa_link_st *pa_save_link(char*, pa_link_st*);
+static int pa_save_link(char*, pa_link_st*);
+static int pa_identify_link(char *);
 
 #endif
