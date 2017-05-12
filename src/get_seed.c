@@ -8,31 +8,46 @@
 #include <string.h>
 #include <pa_string.h>
 
-//保存下载的种子网页内容
-static char str_buf[PA_PAGE_CONTENT_BUF];	
-
 void pa_get_seed(MYSQL *pa_mysql, pa_seed_url *seed_url_p)
 {
-	char ret_str[PA_BUF_SIZE] = {'\0'};
+	char dow_url[PA_BUF_SIZE] = "\0";
+	char next_url[PA_BUF_SIZE] = "\0";
+	char str_buf[PA_PAGE_CONTENT_BUF] = "\0";
 	pa_seed_url *p = NULL;
 	
 	pa_seed_inquire(pa_mysql, seed_url_p);
-	memset(str_buf, '\0', sizeof(str_buf));
 	
 	p = seed_url_p->next;
 	while(p)
 	{
-		pa_warn(p->url);
-		memset(str_buf, '\0', sizeof(str_buf));
-		memset(ret_str, '\0', sizeof(ret_str));
-		pa_dow_data(p->url, str_buf);
-		pa_get_article_link(pa_mysql, str_buf);
+		strncpy(dow_url, p->url, strlen(p->url));
+		while(1)
+		{
+			pa_warn(dow_url);
+			memset(str_buf, '\0', sizeof(str_buf));
+			pa_dow_data(dow_url, str_buf);
+			pa_get_article_link(pa_mysql, str_buf);
+			
+			if(pa_get_next_page(str_buf, next_url)) {
+				if(!strcmp(next_url, dow_url)) {
+					break;
+				} else {
+					memset(dow_url, '\0', sizeof(dow_url));
+					strncpy(dow_url, next_url, strlen(next_url));
+					memset(next_url, '\0', sizeof(next_url));
+				}	
+			} else {
+				break;
+			}
+		}
+		memset(dow_url, '\0', sizeof(dow_url));
 		p = p->next;
 	}
 }
 
 /*
- * 获取列表页所有文章内容
+ * 获取列表页所有文章标题和文章url，
+ * 并保存到数据库中
  **/
 static int pa_get_article_link(MYSQL *pa_mysql, char *str)
 {
@@ -46,23 +61,15 @@ static int pa_get_article_link(MYSQL *pa_mysql, char *str)
 	
 	while(start != NULL)
 	{
-		if((start = pa_strtok(start, ch[0], ch[1], ch1[0])) < 0)
-		{
-			pa_warn("字符串提取失败");
-			continue;
-		}
+		if((start = pa_strtok(start, ch[0], ch[1], ch1[0])) == NULL)
+			break;
 		
-		if(pa_strtok(ch1[0], ch[2], ch[3], ch1[1]) < 0)
-		{
-			pa_warn("字符串提取失败");
+		if(pa_strtok(ch1[0], ch[2], ch[3], ch1[1]) == NULL)
 			continue;
-		}
 		
 		if(pa_strtok_link(ch1[1], href, title))
-		{
-			pa_warn("字符串提取失败");
 			continue;
-		}
+
 		pa_insert_article_link(pa_mysql, href, title);
 		memset(ch1[0], '\0', sizeof(ch1[0]));
 		memset(ch1[1], '\0', sizeof(ch1[1]));
@@ -70,6 +77,31 @@ static int pa_get_article_link(MYSQL *pa_mysql, char *str)
 		memset(title, '\0', sizeof(title));
 	}
 }
+
+/*
+ * 此函数用于判断目录页是否有下一页，如果有则将下一页的url存入next_url中，
+ * 并返回1。如果没有则返回0；
+ **/
+static int pa_get_next_page(char *str_buf, char *next_url)
+{
+	int ret_num = 0;
+	char *ch[] = {"<a class=\"next page-numbers\"", ">"};
+	char ch1[PA_BUF_SIZE] = {"\0"};
+	char href[PA_BUF_SIZE] = "\0";
+	char title[PA_BUF_SIZE] = "\0";
+	
+	if(pa_strtok_r(str_buf, ch[0], ch[1], ch1) == -1)
+		return 0;
+	
+	ret_num = pa_strtok_link(ch1, href, title);
+	if(ret_num == -1 || ret_num == 2) {
+		return 0;
+	}
+	
+	strncpy(next_url, href, strlen(href));
+	return 1;
+}
+
 /* 
  * 通过正则表达式获取str中的连接 
  * str:源字符串

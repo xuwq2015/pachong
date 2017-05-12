@@ -8,5 +8,6 @@
 void pa_get_seed(MYSQL*, pa_seed_url*);
 static int pa_match_str(char*, char*);
 static int pa_get_article_link(MYSQL*, char*);
+static int pa_get_next_page(char *str_buf, char *next_url);
 
 #endif

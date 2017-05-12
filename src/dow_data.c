@@ -1,3 +1,7 @@
+/*
+ * libcurl库相关操作，主要用来下载网页内容
+ */
+
 #include <dow_data.h>
 #include <err_warn.h>
 #include <curl/curl.h>
