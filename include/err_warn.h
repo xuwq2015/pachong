@@ -3,12 +3,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
-#include <string.h>
-#include <common.h>
 
 void pa_err(char *);
 void pa_warn(char *);
-static char *pa_get_time(char*);
+static void pa_get_time(char*);
 
 #endif
