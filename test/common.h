@@ -5,6 +5,7 @@
 #define PA_PARAMETER_ERR "参数输入错误，请重新输入"
 #define PA_FILENAME_SIZE 100
 #define PA_FILE_DIR "./cache/"
+#define PA_PAGE_CONTENT_BUF 1048576
 
 /* 数据库 */
 #define DB_HOST_NAME "127.0.0.1"

@@ -5,9 +5,9 @@
 #include <regex.h>
 #include <mysql/mysql.h>
 
-void pa_get_seed(MYSQL*, pa_seed_url*);
+void pa_get_seed();
 static int pa_match_str(char*, char*);
-static int pa_get_article_link(MYSQL*, char*);
-static int pa_get_next_page(char *str_buf, char *next_url);
+static int pa_get_article_link();
+static int pa_get_next_page(char *next_url);
 
 #endif

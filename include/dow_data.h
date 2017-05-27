@@ -3,7 +3,7 @@
 
 #include <sys/types.h>
 
-int pa_dow_data(char*, char*);
+int pa_dow_data(char*);
 size_t callback_get_head(void*, size_t, size_t, void*);
 
 #endif

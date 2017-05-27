@@ -8,27 +8,30 @@
 #include <string.h>
 #include <pa_string.h>
 
-void pa_get_seed(MYSQL *pa_mysql, pa_seed_url *seed_url_p)
+extern char dow_content_buf[PA_PAGE_CONTENT_BUF];
+extern pa_seed_url pa_seed_head;
+
+/* 获取种子页面（文章列表页）内的所有文章url
+	并写入数据库 */
+void pa_get_seed()
 {
 	char dow_url[PA_BUF_SIZE] = "\0";
 	char next_url[PA_BUF_SIZE] = "\0";
-	char str_buf[PA_PAGE_CONTENT_BUF] = "\0";
 	pa_seed_url *p = NULL;
 	
-	pa_seed_inquire(pa_mysql, seed_url_p);
 	
-	p = seed_url_p->next;
+	/* 开始提取种子页面数据 */
+	p = pa_seed_head.next;
 	while(p)
 	{
 		strncpy(dow_url, p->url, strlen(p->url));
 		while(1)
 		{
-			pa_warn(dow_url);
-			memset(str_buf, '\0', sizeof(str_buf));
-			pa_dow_data(dow_url, str_buf);
-			pa_get_article_link(pa_mysql, str_buf);
+			memset(dow_content_buf, '\0', sizeof(dow_content_buf));
+			pa_dow_data(dow_url, dow_content_buf);
+			pa_get_article_link();
 			
-			if(pa_get_next_page(str_buf, next_url)) {
+			if(pa_get_next_page(next_url)) {
 				if(!strcmp(next_url, dow_url)) {
 					break;
 				} else {
@@ -49,14 +52,14 @@ void pa_get_seed(MYSQL *pa_mysql, pa_seed_url *seed_url_p)
  * 获取列表页所有文章标题和文章url，
  * 并保存到数据库中
  **/
-static int pa_get_article_link(MYSQL *pa_mysql, char *str)
+static int pa_get_article_link()
 {
 	char ch1[2][PA_PAGE_CONTENT_BUF] = {"\0", "\0"};
 	char *ch[4] = {"<li class=\"i_list list_n2\">", 
 					"</li>", "<a", ">"};
 	char href[PA_BUF_SIZE] = {'\0'};
 	char title[PA_BUF_SIZE] = {'\0'};
-	char *start = str, *end = NULL;
+	char *start = dow_content_buf, *end = NULL;
 	int str_size = 0;
 	
 	while(start != NULL)
@@ -70,7 +73,7 @@ static int pa_get_article_link(MYSQL *pa_mysql, char *str)
 		if(pa_strtok_link(ch1[1], href, title))
 			continue;
 
-		pa_insert_article_link(pa_mysql, href, title);
+		pa_insert_article_link(href, title);
 		memset(ch1[0], '\0', sizeof(ch1[0]));
 		memset(ch1[1], '\0', sizeof(ch1[1]));
 		memset(href, '\0', sizeof(href));
@@ -82,9 +85,10 @@ static int pa_get_article_link(MYSQL *pa_mysql, char *str)
  * 此函数用于判断目录页是否有下一页，如果有则将下一页的url存入next_url中，
  * 并返回1。如果没有则返回0；
  **/
-static int pa_get_next_page(char *str_buf, char *next_url)
+static int pa_get_next_page(char *next_url)
 {
 	int ret_num = 0;
+	char *str_buf = dow_content_buf;
 	char *ch[] = {"<a class=\"next page-numbers\"", ">"};
 	char ch1[PA_BUF_SIZE] = {"\0"};
 	char href[PA_BUF_SIZE] = "\0";

@@ -4,7 +4,7 @@
 #define PA_BUF_SIZE 1024						//字符串数组缓冲区大小
 #define PA_ESSAY_URL_BUF 350					//文章url缓冲区大小
 #define PA_SEED_BUF 150							//种子url缓冲区大小
-#define PA_PAGE_CONTENT_BUF	512000				//页面缓存大小
+#define PA_PAGE_CONTENT_BUF	1048576				//页面缓存大小1M
 
 
 /* 数据库 */
@@ -14,6 +14,7 @@
 #define DB_NAME "pachong"
 #define DB_PORT 3306
 #define DB_ARTICLE_LINK_TABLE "essay_url"
+#define DB_ARTICLE_CONTENT_TABLE "article_content"
 
 /*
  *const char *g_host_name = "localhost";

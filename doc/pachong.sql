@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2017-05-12 09:16:20
+-- Generation Time: 2017-05-12 14:38:22
 -- 服务器版本： 5.7.18
 -- PHP Version: 5.6.30
 
@@ -27,6 +27,25 @@ USE `pachong`;
 -- --------------------------------------------------------
 
 --
+-- 表的结构 `article_content`
+--
+
+DROP TABLE IF EXISTS `article_content`;
+CREATE TABLE `article_content` (
+  `uid` mediumint(8) UNSIGNED NOT NULL,
+  `url` char(255) NOT NULL,
+  `content` mediumtext,
+  `createtime` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- 插入之前先把表清空（truncate） `article_content`
+--
+
+TRUNCATE TABLE `article_content`;
+-- --------------------------------------------------------
+
+--
 -- 表的结构 `essay_url`
 --
 
@@ -39,6 +58,11 @@ CREATE TABLE `essay_url` (
   `createtime` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- 插入之前先把表清空（truncate） `essay_url`
+--
+
+TRUNCATE TABLE `essay_url`;
 -- --------------------------------------------------------
 
 --
@@ -51,8 +75,20 @@ CREATE TABLE `seed_url` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
+-- 插入之前先把表清空（truncate） `seed_url`
+--
+
+TRUNCATE TABLE `seed_url`;
+--
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `article_content`
+--
+ALTER TABLE `article_content`
+  ADD PRIMARY KEY (`uid`),
+  ADD UNIQUE KEY `url` (`url`);
 
 --
 -- Indexes for table `essay_url`
@@ -72,10 +108,15 @@ ALTER TABLE `seed_url`
 --
 
 --
+-- 使用表AUTO_INCREMENT `article_content`
+--
+ALTER TABLE `article_content`
+  MODIFY `uid` mediumint(8) UNSIGNED NOT NULL AUTO_INCREMENT;
+--
 -- 使用表AUTO_INCREMENT `essay_url`
 --
 ALTER TABLE `essay_url`
-  MODIFY `uid` mediumint(8) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=0;COMMIT;
+  MODIFY `uid` mediumint(8) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

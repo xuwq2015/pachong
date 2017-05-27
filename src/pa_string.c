@@ -35,7 +35,7 @@ char *pa_strtok(char *src, char *start, char *end, char *des)
  * */
 int pa_strtok_r(char *src, char *start, char *end, char *des)
 {
-		char *ch, *ch1;
+	char *ch, *ch1;
 	int str_size;
 	
 	ch = strstr(src, start);
@@ -51,6 +51,87 @@ int pa_strtok_r(char *src, char *start, char *end, char *des)
 	strncpy(des, ch, str_size);
 	
 	return 0;
+}
+
+/* 获取两个标签之间的内容，如：<h1>要获取的内容</h1> */
+int pa_get_center(char *src, char *start, char *end, char *des)
+{
+	char *ch, *ch1;
+	int str_size;
+	
+	ch = strstr(src, start);
+	if(ch == NULL)
+		return -1;
+	ch = ch + strlen(start);
+	ch1 = strstr(ch, end);
+	
+	str_size = ch - ch1;
+	if(str_size < 0)
+		str_size *= -1;
+	strncpy(des, ch, str_size);
+	
+	return 0;
+}
+
+/* 
+ * 获取标签“img”中的标题与连接
+ * 返回值：
+ * 0：src和alt全部获取成功
+ * 1：只获取到src
+ * 2：只获取到alt
+ * -1：src和alt全部获取失败
+ **/
+int pa_get_img_link(char *src, char *href, char *title)
+{
+	char *start = NULL, *end = NULL;
+	int str_size = 0;
+	int href_status = 0;
+	int title_status = 0;
+	
+	
+	/* 获取标签中的src */
+	start = strstr(src, "http://");
+	if(start == NULL) {
+		href_status = 0;
+	}else{
+		end = strstr(start, "\"");			//指向最后一个双引号
+		
+		str_size = start - end;				//计算src大小
+		if(str_size < 0)
+			str_size *= -1;
+		
+		strncpy(href, start, str_size);
+		href_status = 1;
+	}
+
+	
+	/* 获取标签中的alt */
+	start = strstr(src, "alt=");
+	if(start == NULL){
+		title_status = 0;
+	} else {
+		start = strstr(start, "\"");		
+		start = start + 1;
+		end = strstr(start, "\"");
+		str_size = start - end;
+		if(str_size < 0)
+			str_size *= -1;
+		strncpy(title, start, str_size);
+		title_status = 1;
+	}
+	
+	
+	/* 计算返回值 */
+	if(href_status) {
+		if(title_status)
+			return 0;
+		else
+			return 1;
+	} else if(title_status) {
+		return 2;
+	} else {
+		return -1;
+	}
 }
 
 /* 
