@@ -8,45 +8,23 @@
 #include <db_option.h>
 #include <get_seed.h>
 #include <pa_get_article.h>
+#include <pa_read_config.h>
 
-MYSQL pa_mysql; 								// mysql连接
-
-pa_seed_url pa_seed_head;						// 种子url链表头
 article_url_st pa_article_url_head;				// 文章url链表头
 article_content_st pa_article_content_head;		// 文章内容链表头
+extern web_config web_config_head;
 
-char *dow_content_buf[PA_PAGE_CONTENT_BUF];		// 下载到的网页内容缓冲区
-
-/* 程序初始化函数 */
-void pa_init(void)
-{
-	CURLcode ret_code;
-	
-	pa_init_mysql();
-	ret_code = curl_global_init(CURL_GLOBAL_NOTHING);
-}
 
 void pa_free(void)
-{
-	pa_seed_url *url_next;
-	pa_seed_url *url_p = pa_seed_head.next;
-	
+{	
 	article_url_st *article_url_next;
 	article_url_st *article_url_p = pa_article_url_head.next;
 	
 	article_content_st *article_content_next;
 	article_content_st *article_content_head = pa_article_content_head.next;
-	
-	mysql_close (&pa_mysql);	//关闭数据库连接
-	curl_global_cleanup();		//关闭curl
-	
-	/* 释放种子url链表 */
-	while(url_p != NULL)
-	{
-		url_next = url_p->next;
-		free(url_p);
-		url_p = url_next;
-	}
+
+	web_config *web_config_next;
+	web_config *web_config_p = web_config_head.next;
 	
 	/* 释放文章url链表 */
 	while(article_url_p != NULL)
@@ -63,19 +41,13 @@ void pa_free(void)
 		free(article_content_head);
 		article_content_head = article_content_next;
 	}
-}
 
-void pa_free_seed_list(void)
-{
-	pa_seed_url *url_next;
-	pa_seed_url *url_p = pa_seed_head.next;
-	
-	/* 释放种子url链表 */
-	while(url_p != NULL)
+	/* 释放文章url链表 */
+	while(web_config_p != NULL)
 	{
-		url_next = url_p->next;
-		free(url_p);
-		url_p = url_next;
+		web_config_next = web_config_p->next;
+		free(web_config_p);
+		web_config_p = web_config_next;
 	}
 }
 
@@ -115,23 +87,30 @@ int main(int argc, char *argv[])
 		pa_err(str);
 		exit(0);
 	}
-	
-	pa_init();
+
+	/* 各种初始化操作 */
+	pa_init_config();
+	open_log_file();
+	pa_init_mysql();
+	pa_init_curl();
 	
 	
 	/* 从数据库中查询种子url */
 	pa_seed_inquire();
 	
 	/* 从种子url中获取文章url并保存 */
-	pa_get_seed();	
-	pa_free_seed_list();
+	pa_get_seed_content();	
 	
 	
 	/* 从数据库中读取文章url，
 		并提取文章url内容保存到数据库中 */
-	pa_get_article_content();
-	
+	//pa_get_article_content();
+
+	/* 各种清理操作 */
 	pa_free();
+	pa_close_mysql();	//关闭数据库连接
+	pa_cleanup_curl();	//关闭curl
+	close_log_file();	//关闭log文件
 	
 	return 0;
 }
